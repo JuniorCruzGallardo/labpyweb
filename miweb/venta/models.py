@@ -45,7 +45,7 @@ from django.core.validators import MinValueValidator
 class Producto(models.Model):
     id_producto = models.AutoField(primary_key=True)  # entero autocorrelativo, clave primaria
     nom_prod = models.CharField(max_length=50)
-    des_prod = models.TextField(max_length=500)
+    descrip_prod = models.TextField(max_length=500)
     precio = models.DecimalField(
         max_digits=10, decimal_places=2,
         validators=[MinValueValidator(0.01)]
@@ -53,7 +53,7 @@ class Producto(models.Model):
     stock = models.PositiveIntegerField()  # entero >= 0
     activo = models.BooleanField(default=True)
     fec_vencim = models.DateField()
-    fec_reg = models.DateTimeField(auto_now_add=True)  # timestamp al guardar
+    fec_reg = models.DateTimeField()  # timestamp al guardar
 
     def __str__(self):
-        return f'{self.id_producto} - {self.nom_prod} - {self.precio}' 
+        return f'{self.nom_prod} - S/. {self.precio} (Stock: {self.stock}) | Vence: {self.fec_vencim} | Activo: {"Sí" if self.activo else "No"}'

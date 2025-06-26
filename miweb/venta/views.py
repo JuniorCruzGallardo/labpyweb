@@ -1,6 +1,8 @@
 from django.shortcuts import render
 # En la vista se debe considera el modelo que se va usar
 from .models import Cliente
+from .models import Producto
+from .forms import ProductoCreateForm
 
 # consulta_clientes es la vista que muestra la lista
 def consulta_clientes(request):
@@ -100,6 +102,114 @@ def actualizar_cliente(request):
     return render(request,'venta/u_cliente.html', context)
                      
 # Eliminar clientes
+def borrar_producto(request):
+    productos_encontrados = []
+    tipo_busqueda = 'id'
+    termino_busqueda = '' # pa dentro de las cajas
+    total_registros = 0
+
+    if request.method == 'POST':
+        #
+        if 'consultar' in request.POST:
+            # Realizar la búsqueda
+            tipo_busqueda = request.POST.get('tipo_busqueda', 'id')
+            termino_busqueda = request.POST.get('termino_busqueda','').strip()
+
+            if termino_busqueda:
+                # procesar
+                if tipo_busqueda == 'id':
+                    try:
+                        producto = Producto.objects.get(id_producto = termino_busqueda)
+                        productos_encontrados = [producto]
+                    except Producto.DoesNotExist:
+                        messages.error(request, 'No se encontró producto con ese id')    
+
+                elif tipo_busqueda == 'nombre':
+                    productos_encontrados = Producto.objects.filter(
+                        nom_prod__icontains = termino_busqueda # obtener las coincidencias
+                    ).order_by('id_producto') # debe estar ordenado
+
+                    if not productos_encontrados:
+                        messages.error(request, 'No se encontraron productos con ese nombre')
+
+                total_registros = len(productos_encontrados)
+
+                if total_registros > 0:
+                    messages.success(request, f'Se encontraron {total_registros} registro(s)')        
+
+            else:
+                messages.error(request, 'Ingrese un término de búsqueda')    
+
+        elif 'eliminar' in request.POST:
+            # Eliminar cliente
+            id_eliminar = request.POST.get('id_eliminar')
+
+            if id_eliminar:
+                try:
+                    # buscar al cliente a eliminar
+                    producto = Producto.objects.get(id_producto = id_eliminar)
+                    producto.delete()
+                    messages.success(request, f'producto con id {id_eliminar} eliminado correctamente')
+
+                    # Volver a hacer la búsqueda para actualizar la lista
+                    tipo_busqueda = request.POST.get('tipo_busqueda_actual', 'id')
+                    termino_busqueda = request.POST.get('termino_busqueda_actual','')
+
+                    if termino_busqueda:
+                        if tipo_busqueda == 'id':
+                            # Para DNI, no mostrar nada porque ya se eliminó
+                            productos_encontrados = []
+                        elif tipo_busqueda == 'nombre':
+                            # En este caso hay que buscar nuevamente lo que queda
+                            productos_encontrados = Producto.objects.filter(
+                                nom_prod__icontains = termino_busqueda
+                            ).order_by('id_producto')
+
+                        total_registros = len(productos_encontrados)
+                
+
+                except Producto.DoesNotExist:
+                    messages.error(request, 'producto no encontrado')
+    
+    context = {
+        'productos_encontrados' : productos_encontrados,
+        'tipo_busqueda' : tipo_busqueda,
+        'termino_busqueda' : termino_busqueda,
+        'total_registros' : total_registros
+    }
+
+    return render(request, 'venta/borrar_producto.html', context)
+
+
+def consulta_productos(request):
+    # Se requiere obtnr los datos a gestionar
+    #clientes = Cliente.objects.all().order_by('ape_nom')#Data que se la que se requira
+    productos = Producto.objects.all().order_by('id_producto')#Data que se la que se requira
+    
+    # Estos datos deben estar disponibles para una plantilla (Template)
+    # Se crea un diccionario llamado context (será accesible desde la plantilla)
+    context = {# en el template será objeto valor
+        'productos' : productos,
+        'titulo' : 'Lista de Productos'
+    }
+    # Se devolverá el enlace entre la plantilla y el contexto
+    return render(request, 'venta\lista_productos.html', context)
+
+
+
+def crear_producto(request):
+    if request.method == 'POST':
+        form = ProductoCreateForm(request.POST)
+        if form.is_valid():
+            form.save() # salvar los datos
+            messages.success(request, 'producto registrado correctamente')
+            return redirect('crear_producto') # se redirecciona a la misma página
+    else:
+        form = ProductoCreateForm() # No hace nada, devuelve la misma pantalla
+
+    return render(request, 'venta/crear_producto.html', {'form':form})  
+
+
 def borrar_cliente(request):
     clientes_encontrados = []
     tipo_busqueda = 'dni'
