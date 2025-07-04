@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, re_path
 from . import views
 
 urlpatterns = [
@@ -28,6 +28,7 @@ urlpatterns = [
     path('venta/d_compra', views.borrar_compra, name='borrar_compra'),
 
 
-
+    #Poner al final de la lista
+    re_path(r'^.*/$', views.handle_undefined_url, name = 'catch_all'),
 
 ]
