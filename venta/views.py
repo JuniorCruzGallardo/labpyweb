@@ -10,9 +10,10 @@ from django.contrib.auth import authenticate, login, logout
 
 #=============================================
 
-from .forms import CompraForm
-from .models import Compra
-from django.shortcuts import get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import Venta
+from .forms import VentaCreateForm, VentaUpdateForm
 
 #=============================================
 def handle_undefined_url(request):
@@ -583,143 +584,56 @@ def borrar_proveedor(request):
     return render(request, 'venta/borrar_proveedor.html', context)
 
 
-
-
-
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from .models import Compra
-from .forms import CompraForm, CompraUpdateForm, DetalleCompraFormSet
-
-# Crear compra con detalles
-def crear_compra(request):
+# Crear una nueva venta
+@login_required
+@permission_required('venta.add_venta', raise_exception=True)
+def venta_create(request):
     if request.method == 'POST':
-        form_compra = CompraForm(request.POST)
-        formset_detalles = DetalleCompraFormSet(request.POST)
-
-        if form_compra.is_valid() and formset_detalles.is_valid():
-            compra = form_compra.save(commit=False)
-            compra.total = 0  # Inicializamos en cero
-
-            # Guardamos primero la compra para tener un ID
-            compra.save()
-
-            total_general = 0
-            detalles = formset_detalles.save(commit=False)
-
-            for detalle in detalles:
-                detalle.compra = compra
-                detalle_total = detalle.cantidad * detalle.precio_unitario
-                total_general += detalle_total
-                detalle.save()
-
-            # Actualizamos el total de la compra
-            compra.total = total_general
-            compra.save()
-
-            messages.success(request, "Compra registrada correctamente con sus productos.")
-            return redirect('crear_compra')
-        else:
-            messages.error(request, "Corrige los errores en el formulario.")
+        form = VentaCreateForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Venta registrada correctamente')
+            return redirect('lista_ventas')  # Opcionalmente puedes cambiarlo
     else:
-        form_compra = CompraForm()
-        formset_detalles = DetalleCompraFormSet()
+        form = VentaCreateForm()
 
-    return render(request, 'venta/crear_compra.html', {
-        'form_compra': form_compra,
-        'formset_detalles': formset_detalles,
-        'titulo': 'Registrar Compra con Detalles'
-    })
+    return render(request, 'venta/crear_venta.html', {'form': form})  
 
-# Actualizar compra (solo campos básicos)
-def actualizar_compra(request,):
-    compra = None
-    id_buscado = None
-    form = None
+
+# Actualizar una venta existente
+@login_required
+@permission_required('venta.change_venta', raise_exception=True)
+def venta_update(request, cod_venta):
+    venta = get_object_or_404(Venta, cod_venta=cod_venta)
+    if request.method == 'POST':
+        form = VentaUpdateForm(request.POST, instance=venta)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Venta actualizada correctamente')
+            return redirect('lista_ventas')
+    else:
+        form = VentaUpdateForm(instance=venta)
+
+    return render(request, 'venta/u_venta.html', {'form': form, 'venta': venta})  
+
+
+# Listar ventas
+@login_required
+@permission_required('venta.view_venta', raise_exception=True)
+def venta_list(request):
+    ventas = Venta.objects.all().order_by('-cod_venta')
+    return render(request, 'venta/lista_ventas.html', {'ventas': ventas})  
+
+
+# Eliminar venta (si tienes plantilla)
+@login_required
+@permission_required('venta.delete_venta', raise_exception=True)
+def venta_delete(request, cod_venta):
+    venta = get_object_or_404(Venta, cod_venta=cod_venta)
 
     if request.method == 'POST':
-        if 'buscar' in request.POST:
-            id_buscado = request.POST.get('id_busqueda')
-            if id_buscado:
-                try:
-                    compra = Compra.objects.get(id_compra=id_buscado)
-                    form = CompraUpdateForm(instance=compra)
-                    messages.success(request, f'Compra con ID {id_buscado} encontrada')
-                except Compra.DoesNotExist:
-                    messages.error(request, 'No se encontró compra con ese ID')
-            else:
-                messages.error(request, 'Ingrese el ID de la compra para buscar')
+        venta.delete()
+        messages.success(request, 'Venta eliminada correctamente.')
+        return redirect('lista_ventas')
 
-        elif 'guardar' in request.POST:
-            id_buscado = request.POST.get('id_busqueda') or request.POST.get('id_compra')
-            if id_buscado:
-                try:
-                    compra = Compra.objects.get(id_compra=id_buscado)
-                    form = CompraUpdateForm(request.POST, instance=compra)
-                    if form.is_valid():
-                        form.save()
-                        messages.success(request, 'Compra actualizada correctamente')
-                        compra.refresh_from_db()
-                        form = CompraUpdateForm(instance=compra)
-                    else:
-                        messages.error(request, 'Error en los datos del formulario')
-                except Compra.DoesNotExist:
-                    messages.error(request, 'Compra no encontrada')
-            else:
-                messages.error(request, 'No se puede identificar la compra para actualizar')
-
-    context = {
-        'form': form,
-        'id_buscado': id_buscado,
-        'compra_encontrada': compra is not None,
-        'compra': compra,
-        'titulo': 'Actualizar Compra'
-    }
-    return render(request, 'venta/u_compra.html', context)
-
-# Consultar compras
-def consulta_compras(request):
-    compras = Compra.objects.all().order_by('id_compra')
-    return render(request, 'venta/lista_compras.html', {
-        'compras': compras,
-        'titulo': 'Lista de Compras',
-        'mensaje': 'Consulta de compras'
-    })
-
-# Eliminar compra
-def borrar_compra(request):
-    compras_encontradas = []
-    termino_busqueda = ''
-    total_registros = 0
-
-    if request.method == 'POST':
-        if 'consultar' in request.POST:
-            termino_busqueda = request.POST.get('termino_busqueda', '').strip()
-            if termino_busqueda:
-                try:
-                    compra = Compra.objects.get(id_compra=termino_busqueda)
-                    compras_encontradas = [compra]
-                    messages.success(request, 'Compra encontrada')
-                except Compra.DoesNotExist:
-                    messages.error(request, 'No se encontró compra con ese ID')
-                total_registros = len(compras_encontradas)
-            else:
-                messages.error(request, 'Ingrese un ID de compra para buscar')
-
-        elif 'eliminar' in request.POST:
-            id_eliminar = request.POST.get('id_eliminar')
-            if id_eliminar:
-                try:
-                    compra = Compra.objects.get(id_compra=id_eliminar)
-                    compra.delete()
-                    messages.success(request, f'Compra con ID {id_eliminar} eliminada correctamente')
-                    compras_encontradas = []
-                except Compra.DoesNotExist:
-                    messages.error(request, 'Compra no encontrada')
-
-    return render(request, 'venta/borrar_compra.html', {
-        'compras_encontradas': compras_encontradas,
-        'termino_busqueda': termino_busqueda,
-        'total_registros': total_registros,
-        'titulo': 'Eliminar Compra'
-    })
+    return render(request, 'venta/borrar_venta.html', {'venta': venta})

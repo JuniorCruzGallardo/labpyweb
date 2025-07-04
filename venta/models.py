@@ -99,26 +99,20 @@ class Proveedor(models.Model):
         return f'ID: {self.id_proveedor} | {self.razon_social} | RUC: {self.ruc}'
 
 
-class Compra(models.Model):
-    id_compra = models.CharField(max_length=10, primary_key=True)
-    proveedor = models.ForeignKey('Proveedor', on_delete=models.CASCADE)
-    fecha_compra = models.DateField()
-    total = models.DecimalField(max_digits=10, decimal_places=2)
+
+
+class Venta(models.Model):
+    cod_venta = models.AutoField(primary_key=True)  # clave primaria autoincremental
+    cod_cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    cod_producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
+    cantidad = models.PositiveIntegerField(validators=[MinValueValidator(1)])
+    precio_unitario = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0.01)])
+    subtotal = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
+
+    def save(self, *args, **kwargs):
+        # Calcula subtotal automáticamente antes de guardar
+        self.subtotal = self.cantidad * self.precio_unitario
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.id_compra} - {self.proveedor.nom_proveedor}"
-
-
-class DetalleCompra(models.Model):
-    compra = models.ForeignKey('Compra', on_delete=models.CASCADE, related_name='detalles')
-    producto = models.ForeignKey('Producto', on_delete=models.CASCADE)
-    cantidad = models.PositiveIntegerField()
-    precio_unitario = models.DecimalField(max_digits=10, decimal_places=2)
-
-    @property
-    def subtotal(self):
-        return self.cantidad * self.precio_unitario
-
-    def __str__(self):
-        return f"{self.producto.nom_prod} x {self.cantidad} (Compra {self.compra.id_compra})"
-
+        return f"Venta {self.cod_venta} | Cliente: {self.cod_cliente.id_cliente} | Producto: {self.cod_producto.nom_prod}"

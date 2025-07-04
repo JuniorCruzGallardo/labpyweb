@@ -21,11 +21,13 @@ urlpatterns = [
     path('venta/u_proveedor', views.actualizar_proveedor, name='actualizar_proveedor'),
     path('venta/d_proveedor', views.borrar_proveedor, name='borrar_proveedor'),
 
-    # Compras
-    path('venta/c_compra', views.crear_compra, name='crear_compra'),
-    path('venta/u_compra', views.actualizar_compra, name='actualizar_compra'),
-    path('venta/q_compra', views.consulta_compras, name='lista_compras'),
-    path('venta/d_compra', views.borrar_compra, name='borrar_compra'),
+
+    # Ventas
+    path('venta/q_venta', views.venta_list, name='lista_ventas'),
+    path('venta/c_venta', views.venta_create, name='crear_venta'),
+    path('venta/u_venta/<str:cod_venta>/', views.venta_update, name='actualizar_venta'),
+    path('venta/d_venta/<str:cod_venta>/', views.venta_delete, name='eliminar_venta'),
+
 
 
     #Poner al final de la lista

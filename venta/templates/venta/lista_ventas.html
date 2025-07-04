@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Ventas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .header-section h1 {
+            margin: 0;
+            color: #333;
+            font-size: 28px;
+        }
+
+        .btn-exit {
+            background-color: #9E9E9E;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .btn-exit:hover {
+            background-color: #757575;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #1976D2;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        .stats-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f5e9;
+            border-left: 5px solid #4CAF50;
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        .btn-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-actions a {
+            padding: 6px 12px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .btn-edit {
+            background-color: #FFC107;
+            color: black;
+        }
+
+        .btn-edit:hover {
+            background-color: #e0a800;
+        }
+
+        .btn-delete {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-section">
+            <h1>🧾 Registro de Ventas</h1>
+            <a href="{% url 'home' %}" class="btn-exit">Salir</a>
+        </div>
+
+        {% if ventas %}
+        <table>
+            <thead>
+                <tr>
+                    <th>🆔 ID Venta</th>
+                    <th>👤 Cliente</th>
+                    <th>📦 Producto</th>
+                    <th>🔢 Cantidad</th>
+                    <th>💲 Precio Unitario</th>
+                    <th>💰 Subtotal</th>
+                    <th>⚙️ Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for venta in ventas %}
+                <tr>
+                    <td>{{ venta.cod_venta }}</td>
+                    <td>{{ venta.cod_cliente.ape_nom }}</td>
+                    <td>{{ venta.cod_producto.nom_prod }}</td>
+                    <td>{{ venta.cantidad }}</td>
+                    <td>S/ {{ venta.precio_unitario }}</td>
+                    <td>S/ {{ venta.subtotal }}</td>
+                    <td class="btn-actions">
+                        <a href="{% url 'actualizar_venta' venta.cod_venta %}" class="btn-edit">✏️ Editar</a>
+                        <a href="{% url 'eliminar_venta' venta.cod_venta %}" class="btn-delete">🗑️ Eliminar</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="stats-section">
+            📊 Total de ventas registradas: {{ ventas|length }}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            📭 No hay ventas registradas en el sistema.
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

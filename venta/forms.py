@@ -1,7 +1,7 @@
 from django import forms
 #from django.core.validators import RegexValidator
 # De nuestro negocio
-from .models import Cliente, Producto, Proveedor, Compra, DetalleCompra
+from .models import Cliente, Producto, Proveedor, Venta
 
 # Para gestionar un error
 from django.core.exceptions import ValidationError
@@ -205,73 +205,84 @@ class ProveedorUpdateForm(forms.ModelForm):
         }
 
 #===========================
-# Formulario Principal de Compra
+# Formulario Principal de venta
 
-from django.core.exceptions import ValidationError
-from django.forms import inlineformset_factory
-#===========================
-class CompraForm(forms.ModelForm):
+class VentaCreateForm(forms.ModelForm):
     class Meta:
-        model = Compra
-        fields = ['id_compra', 'proveedor', 'fecha_compra']
+        model = Venta
+        fields = ['cod_cliente', 'cod_producto', 'cantidad', 'precio_unitario']
         labels = {
-            'id_compra': 'ID de la Compra',
-            'proveedor': 'Proveedor',
-            'fecha_compra': 'Fecha de Compra',
+            'cod_cliente'     : 'Cliente',
+            'cod_producto'    : 'Producto',
+            'cantidad'        : 'Cantidad',
+            'precio_unitario' : 'Precio Unitario (S/.)',
         }
         widgets = {
-            'fecha_compra': forms.DateInput(attrs={'type': 'date'}),
+            'cantidad': forms.NumberInput(attrs={'min': 1}),
+            'precio_unitario': forms.NumberInput(attrs={'step': '0.01', 'min': '0.01'}),
         }
 
-    def clean_id_compra(self):
-        id_compra = self.cleaned_data.get('id_compra')
-        if id_compra and Compra.objects.filter(id_compra=id_compra).exists():
-            raise ValidationError("ID_COMPRA_DUPLICADO")
-        return id_compra
+    def clean(self):
+        cleaned_data = super().clean()
+        cantidad = cleaned_data.get('cantidad')
+        precio_unitario = cleaned_data.get('precio_unitario')
 
-#===========================
-# Formulario de DetalleCompra (inline)
-#===========================
-class DetalleCompraForm(forms.ModelForm):
+        if cantidad is not None and cantidad <= 0:
+            self.add_error('cantidad', "La cantidad debe ser mayor que cero.")
+
+        if precio_unitario is not None and precio_unitario <= 0:
+            self.add_error('precio_unitario', "El precio unitario debe ser mayor que cero.")
+
+class VentaUpdateForm(forms.ModelForm):
     class Meta:
-        model = DetalleCompra
-        fields = ['producto', 'cantidad', 'precio_unitario']
+        model = Venta
+        fields = ['cod_cliente', 'cod_producto', 'cantidad', 'precio_unitario']
         labels = {
-            'producto': 'Producto',
-            'cantidad': 'Cantidad',
-            'precio_unitario': 'Precio Unitario (S/.)',
-        }
-
-#===========================
-# InlineFormset de Detalles de Compra
-#===========================
-DetalleCompraFormSet = inlineformset_factory(
-    Compra,
-    DetalleCompra,
-    form=DetalleCompraForm,
-    extra=1,
-    can_delete=True
-)
-
-#===========================
-# Formulario para actualizar la compra (cuando ya existe y tiene total)
-#===========================
-class CompraUpdateForm(forms.ModelForm):
-    class Meta:
-        model = Compra
-        fields = ['proveedor', 'fecha_compra', 'total']
-        labels = {
-            'proveedor'    : 'Proveedor',
-            'fecha_compra' : 'Fecha de Compra',
-            'total'        : 'Total de la Compra (S/.)',
+            'cod_cliente'     : 'Cliente',
+            'cod_producto'    : 'Producto',
+            'cantidad'        : 'Cantidad',
+            'precio_unitario' : 'Precio Unitario (S/.)',
         }
         widgets = {
-            'fecha_compra': forms.DateInput(attrs={'type': 'date'}),
-            'total'       : forms.NumberInput(attrs={'step': '0.01', 'min': '0'}),
+            'cantidad': forms.NumberInput(attrs={'min': 1}),
+            'precio_unitario': forms.NumberInput(attrs={'step': '0.01', 'min': '0.01'}),
         }
-        error_messages = {
-            'total': {
-                'required': "Debe ingresar el total de la compra.",
-                'invalid': "Ingrese un número válido para el total.",
-            },
-        }
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+
+def venta_list(request):
+    ventas = Venta.objects.all().order_by('-cod_venta')
+    return render(request, 'venta/listar.html', {'ventas': ventas})
+
+def venta_create(request):
+    if request.method == 'POST':
+        form = VentaCreateForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Venta registrada correctamente.')
+            return redirect('venta_list')
+    else:
+        form = VentaCreateForm()
+    return render(request, 'venta/crear.html', {'form': form})
+
+def venta_update(request, cod_venta):
+    venta = get_object_or_404(Venta, cod_venta=cod_venta)
+    if request.method == 'POST':
+        form = VentaUpdateForm(request.POST, instance=venta)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Venta actualizada correctamente.')
+            return redirect('venta_list')
+    else:
+        form = VentaUpdateForm(instance=venta)
+    return render(request, 'venta/editar.html', {'form': form, 'venta': venta})
+
+def venta_delete(request, cod_venta):
+    venta = get_object_or_404(Venta, cod_venta=cod_venta)
+    if request.method == 'POST':
+        venta.delete()
+        messages.success(request, 'Venta eliminada correctamente.')
+        return redirect('venta_list')
+    return render(request, 'venta/eliminar.html', {'venta': venta})

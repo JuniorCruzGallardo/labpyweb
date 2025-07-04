@@ -334,11 +334,11 @@
                     <span class="icon">📦</span>
                     Productos
                 </button>
-                <button class="menu-item" onclick="showSection('compras')">
+                <button class="menu-item">
                     <span class="icon">🛒</span>
                     Compras
                 </button>
-                <button class="menu-item">
+                <button class="menu-item" onclick="showSection('ventas')">
                     <span class="icon">💰</span>
                     Ventas
                 </button>
@@ -447,33 +447,32 @@
                         </div>
                     </div>
                 </section>
-                <!-- Sección de Gestión de Compras -->
-                <section id="compras-section" class="gestion-clientes" style="display: none;">
-                    <div class="gestion-header" style="background: linear-gradient(135deg, #3f51b5, #303f9f);">
-                        <h2>Gestión de Compras</h2>
+                <!-- Sección de Gestión de Ventas -->
+                <section id="ventas-section" class="gestion-clientes" style="display: none;">
+                    <div class="gestion-header" style="background: linear-gradient(135deg, #FF5722, #E64A19);">
+                        <h2>Gestión de Ventas</h2>
                     </div>
                     <div class="crud-menu">
                         <div class="crud-buttons">
-                            <a href="/venta/c_compra" class="crud-btn crear">
+                            <a href="/venta/c_venta" class="crud-btn crear">
                                 <span>➕</span>
                                 Crear
                             </a>
-                            <a href="/venta/q_compra" class="crud-btn consultar">
+                            <a href="/venta/q_venta" class="crud-btn consultar">
                                 <span>👁️</span>
                                 Consultar
                             </a>
-                            <a href="/venta/u_compra" class="crud-btn modificar">
+                            <a href="#" class="crud-btn modificar">
                                 <span>✏️</span>
-                                Modificar
+                                "Está incluido en el Registro de Ventas"
                             </a>
-                            <a href="/venta/d_compra" class="crud-btn eliminar">
+                            <a href="#" class="crud-btn eliminar">
                                 <span>🗑️</span>
-                                Eliminar
+                                "Está incluido en el Registro de Ventas"
                             </a>
                         </div>
                     </div>
                 </section>
-
             </div>
         </main>
     </div>
@@ -485,7 +484,7 @@
             document.getElementById('clientes-section').style.display = 'none';
             document.getElementById('productos-section').style.display = 'none';
             document.getElementById('proveedores-section').style.display = 'none';
-            document.getElementById('compras-section').style.display = 'none';
+            document.getElementById('ventas-section').style.display = 'none';
 
             // Remover clase active de todos los menu items
             const menuItems = document.querySelectorAll('.menu-item');
@@ -508,9 +507,9 @@
                 document.getElementById('proveedores-section').style.display = 'block';
                 document.getElementById('main-title').textContent = 'Gestión de Proveedores (Cuando se selecciona Proveedores)';
                 event.target.classList.add('active');
-            }else if (section === 'compras') {
-                document.getElementById('compras-section').style.display = 'block';
-                document.getElementById('main-title').textContent = 'Gestión de Compras (Cuando se selecciona Compras)';
+            }else if (section === 'ventas') {
+                document.getElementById('ventas-section').style.display = 'block';
+                document.getElementById('main-title').textContent = 'Gestión de Ventas';
                 event.target.classList.add('active');
             }
 

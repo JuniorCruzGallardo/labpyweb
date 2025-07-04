@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modificar Venta</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .header-section h1 {
+            margin: 0;
+            color: #333;
+        }
+
+        .btn-exit {
+            background-color: #9E9E9E;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .btn-exit:hover {
+            background-color: #757575;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .readonly-info {
+            background-color: #f5f5f5;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            color: #555;
+        }
+
+        button {
+            padding: 10px 15px;
+            font-weight: bold;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .message {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-section">
+            <h1>Modificar Venta</h1>
+            <a href="{% url 'lista_ventas' %}" class="btn-exit">Salir</a>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="message {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label>ID Venta:</label>
+                <div class="readonly-info">{{ venta.cod_venta }}</div>
+            </div>
+
+            <div class="form-group">
+                {{ form.cod_cliente.label_tag }}
+                {{ form.cod_cliente }}
+                {% if form.cod_cliente.errors %}
+                    <div class="error">{{ form.cod_cliente.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.cod_producto.label_tag }}
+                {{ form.cod_producto }}
+                {% if form.cod_producto.errors %}
+                    <div class="error">{{ form.cod_producto.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.cantidad.label_tag }}
+                {{ form.cantidad }}
+                {% if form.cantidad.errors %}
+                    <div class="error">{{ form.cantidad.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.precio_unitario.label_tag }}
+                {{ form.precio_unitario }}
+                {% if form.precio_unitario.errors %}
+                    <div class="error">{{ form.precio_unitario.errors }}</div>
+                {% endif %}
+            </div>
+
+            <button type="submit">Guardar Cambios</button>
+        </form>
+    </div>
+</body>
+</html>

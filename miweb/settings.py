@@ -129,4 +129,4 @@ LOGIN_URL ='/'
 LOGIN_REDIRECT_URL = '/home/'
 LOGOUT_REDIRECT_URL = '/'
 
-SESSION_COOKIE_AGE = 300 # 5 MINUTOS desde el inicio de la sesion
+#SESSION_COOKIE_AGE = 300 # 5 MINUTOS desde el inicio de la sesion
