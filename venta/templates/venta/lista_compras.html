@@ -117,8 +117,8 @@
             color: #155724;
             font-weight: 600;
         }
-        
-        /* Responsive design */
+
+        /* Responsive */
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
@@ -142,7 +142,7 @@
                 padding: 15px;
             }
         }
-        
+
         @media (max-width: 480px) {
             .header-section h1 {
                 font-size: 20px;
@@ -167,40 +167,40 @@
 
         <div class="table-container">
             <div class="table-header">
-                <h2>📋 Registro de Clientes del Sistema</h2>
+                <h2>🧾 Registro de Compras del Sistema</h2>
             </div>
             <div class="table-content">
                 <table>
                     <thead>
                         <tr>
-                            <th>🆔 DNI</th>
-                            <th>👤 Apellidos y Nombres</th>
-                            <th>📅 Fecha Registro</th>
-                            <th>⏰ Fecha Sistema</th>
+                            <th>🆔 ID Compra</th>
+                            <th>🏢 Proveedor</th>
+                            <th>📅 Fecha de Compra</th>
+                            <th>💰 Total</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for cliente in clientes %}
+                        {% for compra in compras %}
                         <tr>
-                            <td><strong>{{ cliente.id_cliente }}</strong></td>
-                            <td>{{ cliente.ape_nom }}</td>
-                            <td>{{ cliente.fec_reg|date:"d/m/Y" }}</td>
-                            <td>{{ cliente.fec_sis|date:"d/m/Y H:i" }}</td>
+                            <td><strong>{{ compra.id_compra }}</strong></td>
+                            <td>{{ compra.proveedor.razon_social }}</td>
+                            <td>{{ compra.fecha_compra|date:"d/m/Y" }}</td>
+                            <td>S/. {{ compra.total|floatformat:2 }}</td>
                         </tr>
                         {% empty %}
                         <tr>
                             <td colspan="4" class="empty-state">
-                                📭 No hay clientes registrados en el sistema
+                                📭 No hay compras registradas en el sistema
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
-                
-                {% if clientes %}
+
+                {% if compras %}
                 <div class="stats-section">
                     <p class="stats-text">
-                        📊 Total de clientes registrados: {{ clientes|length }}
+                        📊 Total de compras registradas: {{ compras|length }}
                     </p>
                 </div>
                 {% endif %}

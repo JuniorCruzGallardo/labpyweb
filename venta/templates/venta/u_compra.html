@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modificar Cliente</title>
+    <title>Modificar Compra</title>
     <style>
+        /* [Estilos mantenidos del modelo anterior] */
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
@@ -55,7 +56,7 @@
             padding: 15px;
             border: 1px solid #ddd;
             border-radius: 5px;
-            display: {% if cliente_encontrado %}block{% else %}none{% endif %};
+            display: {% if compra_encontrada %}block{% else %}none{% endif %};
         }
         .form-group {
             margin-bottom: 15px;
@@ -76,9 +77,12 @@
             background-color: #f5f5f5;
             cursor: not-allowed;
         }
-        .readonly-field {
+        .readonly-info {
+            padding: 8px;
             background-color: #f5f5f5;
-            cursor: not-allowed;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            color: #666;
         }
         .button-group {
             display: flex;
@@ -132,13 +136,6 @@
             background-color: #e8f5e8;
             border-radius: 4px;
         }
-        .readonly-info {
-            padding: 8px;
-            background-color: #f5f5f5;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            color: #666;
-        }
         .search-input-group {
             display: flex;
             gap: 10px;
@@ -152,7 +149,7 @@
 <body>
     <div class="container">
         <div class="header-section">
-            <h1>Modificar Cliente</h1>
+            <h1>Modificar Compra</h1>
             <a href="/" class="btn-exit">Salir</a>
         </div>
         
@@ -169,14 +166,13 @@
             <form method="post">
                 {% csrf_token %}
                 <div class="form-group">
-                    <label for="dni_busqueda">Buscar por DNI:</label>
+                    <label for="id_busqueda">Buscar por ID de Compra:</label>
                     <div class="search-input-group">
                         <input type="text" 
-                               id="dni_busqueda" 
-                               name="dni_busqueda" 
-                               value="{{ dni_buscado|default_if_none:'' }}" 
-                               maxlength="8" 
-                               placeholder="Ingrese DNI del cliente"
+                               id="id_busqueda" 
+                               name="id_busqueda" 
+                               value="{{ id_buscado|default_if_none:'' }}" 
+                               placeholder="Ingrese ID de la compra"
                                required>
                         <button type="submit" name="buscar" class="btn-search">Buscar</button>
                     </div>
@@ -184,46 +180,46 @@
             </form>
         </div>
 
-        <!-- Formulario de edición (solo se muestra si se encontró un cliente) -->
-        {% if form and cliente_encontrado %}
+        <!-- Formulario de edición -->
+        {% if form and compra_encontrada %}
         <div class="form-container" id="form-container">
-            <h3>Datos del Cliente</h3>
-            <form method="post" id="clienteForm">
+            <h3>Datos de la Compra</h3>
+            <form method="post" id="compraForm">
                 {% csrf_token %}
                 
-                <!-- Campo oculto para mantener el DNI buscado -->
-                <input type="hidden" name="dni_busqueda" value="{{ dni_buscado }}">
-                
+                <input type="hidden" name="id_busqueda" value="{{ id_buscado }}">
+
                 <div class="form-group">
-                    <label>DNI:</label>
-                    <div class="readonly-info">{{ cliente.id_cliente }}</div>
+                    <label>ID de Compra:</label>
+                    <div class="readonly-info">{{ compra.id_compra }}</div>
                 </div>
-                
+
                 <div class="form-group">
-                    {{ form.ape_nom.label_tag }}
-                    {{ form.ape_nom }}
-                    {% if form.ape_nom.errors %}
-                        <div class="error">{{ form.ape_nom.errors }}</div>
+                    {{ form.proveedor.label_tag }}
+                    {{ form.proveedor }}
+                    {% if form.proveedor.errors %}
+                        <div class="error">{{ form.proveedor.errors }}</div>
                     {% endif %}
                 </div>
-                
+
                 <div class="form-group">
-                    {{ form.fec_reg.label_tag }}
-                    {{ form.fec_reg }}
-                    {% if form.fec_reg.errors %}
-                        <div class="error">{{ form.fec_reg.errors }}</div>
+                    {{ form.fecha_compra.label_tag }}
+                    {{ form.fecha_compra }}
+                    {% if form.fecha_compra.errors %}
+                        <div class="error">{{ form.fecha_compra.errors }}</div>
                     {% endif %}
                 </div>
-                
+
                 <div class="form-group">
-                    <label>Fecha de Sistema (no editable):</label>
-                    <div class="readonly-info">
-                        {{ cliente.fec_sis|date:"d/m/Y H:i" }}
-                    </div>
+                    {{ form.total.label_tag }}
+                    {{ form.total }}
+                    {% if form.total.errors %}
+                        <div class="error">{{ form.total.errors }}</div>
+                    {% endif %}
                 </div>
-                
+
                 <div class="button-group">
-                    <button type="submit" name="guardar" class="btn-save">Guardar Cliente</button>
+                    <button type="submit" name="guardar" class="btn-save">Guardar Compra</button>
                     <button type="button" onclick="limpiarDatos()" class="btn-clear">Limpiar Datos</button>
                 </div>
             </form>
@@ -233,26 +229,18 @@
 
     <script>
         function limpiarDatos() {
-            // Limpiar el campo de búsqueda
-            document.getElementById("dni_busqueda").value = "";
-            
-            // Ocultar el formulario de edición
+            document.getElementById("id_busqueda").value = "";
             const formContainer = document.getElementById("form-container");
             if (formContainer) {
                 formContainer.style.display = "none";
             }
-            
-            // Limpiar mensajes de error/éxito
             const messages = document.querySelectorAll('.error, .success');
             messages.forEach(msg => msg.remove());
-            
-            // Enfocar en el campo de búsqueda
-            document.getElementById("dni_busqueda").focus();
+            document.getElementById("id_busqueda").focus();
         }
-        
-        // Auto-focus en el campo de búsqueda al cargar la página
+
         window.onload = function() {
-            document.getElementById("dni_busqueda").focus();
+            document.getElementById("id_busqueda").focus();
         };
     </script>
 </body>

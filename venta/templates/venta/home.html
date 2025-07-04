@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Info Ventas - Sistema de Gestión</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 200px;
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .sidebar-header .icon {
+            font-size: 20px;
+        }
+        
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+        
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+        
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding-left: 25px;
+        }
+        
+        .menu-item.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border-right: 3px solid white;
+        }
+        
+        .menu-item .icon {
+            margin-right: 10px;
+            width: 20px;
+            font-size: 16px;
+        }
+        
+        /* Main content */
+        .main-content {
+            flex: 1;
+            margin-left: 200px;
+            background-color: #f5f5f5;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+        }
+        
+        .main-header {
+            background: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .main-header h1 {
+            color: #333;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .content-area {
+            padding: 30px;
+        }
+        
+        .welcome-section {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .welcome-section h2 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 15px;
+        }
+        
+        .welcome-section p {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        /* Gestión de Clientes Section */
+        .gestion-clientes {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: none;
+        }
+        
+        .gestion-header {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 20px 30px;
+            text-align: center;
+        }
+        
+        .gestion-header h2 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .crud-menu {
+            padding: 30px;
+            background: #fafafa;
+            border-top: 3px solid #e74c3c;
+        }
+        
+        .crud-menu p {
+            color: #e74c3c;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 16px;
+        }
+        
+        .crud-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .crud-btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .crud-btn.crear {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+        
+        .crud-btn.consultar {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+        }
+        
+        .crud-btn.modificar {
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+            color: white;
+        }
+        
+        .crud-btn.eliminar {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: white;
+        }
+        
+        .crud-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Mobile menu toggle */
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+            
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .main-header {
+                padding: 20px 20px 20px 60px;
+            }
+            
+            .content-area {
+                padding: 20px;
+            }
+            
+            .welcome-section {
+                padding: 20px;
+            }
+            
+            .crud-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .crud-menu {
+                padding: 20px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .main-header h1 {
+                font-size: 20px;
+            }
+            
+            .welcome-section h2 {
+                font-size: 24px;
+            }
+            
+            .gestion-header h2 {
+                font-size: 20px;
+            }
+        }
+        
+        /* Overlay for mobile */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        
+        .overlay.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+    <div class="overlay" onclick="closeSidebar()"></div>
+    
+    <div class="container">
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>
+                    <span class="icon">📊</span>
+                    Info Ventas
+                </h2>
+            </div>
+            <div class="sidebar-menu">
+                <button class="menu-item active" onclick="showSection('inicio')">
+                    <span class="icon">🏠</span>
+                    Inicio
+                </button>
+                <button class="menu-item" onclick="showSection('clientes')">
+                    <span class="icon">👥</span>
+                    Clientes
+                </button>
+                <button class="menu-item" onclick="showSection('proveedores')">
+                    <span class="icon">🏭</span>
+                    Proveedores
+                </button>
+                <button class="menu-item"  onclick="showSection('productos')">
+                    <span class="icon">📦</span>
+                    Productos
+                </button>
+                <button class="menu-item" onclick="showSection('compras')">
+                    <span class="icon">🛒</span>
+                    Compras
+                </button>
+                <button class="menu-item">
+                    <span class="icon">💰</span>
+                    Ventas
+                </button>
+                <button class="menu-item">
+                    <span class="icon">👤</span>
+                    Usuarios
+                </button>
+
+                <button class="menu-item" onclick="location.href='/logout'">
+                    <span class="icon">🚪</span>
+                    Cerrar Sesión
+                </button>
+            </div>
+        </nav>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="main-header">
+                <h1 id="main-title">Sistema de Gestión de Ventas</h1>
+            </header>
+            
+            <div class="content-area">
+                <!-- Sección de Inicio -->
+                <section id="inicio-section" class="welcome-section">
+                    <h2>Bienvenido al Sistema Info Ventas</h2>
+                    <p>Seleccione una opción del menú lateral para comenzar a gestionar su negocio.</p>
+                </section>
+                
+                <!-- Sección de Gestión de Clientes -->
+                <section id="clientes-section" class="gestion-clientes">
+                    <div class="gestion-header">
+                        <h2>Gestión de Clientes</h2>
+                    </div>
+                    <div class="crud-menu">
+                        <div class="crud-buttons">
+                            <a href="/venta/c_cliente" class="crud-btn crear">
+                                <span>➕</span>
+                                Crear
+                            </a>
+                            <a href="/venta/q_cliente" class="crud-btn consultar">
+                                <span>👁️</span>
+                                Consultar
+                            </a>
+                            <a href="/venta/u_cliente" class="crud-btn modificar">
+                                <span>✏️</span>
+                                Modificar
+                            </a>
+                            <a href="/venta/d_cliente" class="crud-btn eliminar">
+                                <span>🗑️</span>
+                                Eliminar
+                            </a>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Sección de Gestión de Proveedores -->
+                <section id="proveedores-section" class="gestion-clientes" style="display: none;">
+                    <div class="gestion-header" style="background: linear-gradient(135deg, #9C27B0, #7B1FA2);">
+                        <h2>Gestión de Proveedores</h2>
+                    </div>
+                    <div class="crud-menu">
+                        <div class="crud-buttons">
+                            <a href="/venta/c_proveedor" class="crud-btn crear">
+                                <span>➕</span>
+                                Crear
+                            </a>
+                            <a href="/venta/q_proveedor" class="crud-btn consultar">
+                                <span>👁️</span>
+                                Consultar
+                            </a>
+                            <a href="/venta/u_proveedor" class="crud-btn modificar">
+                                <span>✏️</span>
+                                Modificar
+                            </a>
+                            <a href="/venta/d_proveedor" class="crud-btn eliminar">
+                                <span>🗑️</span>
+                                Eliminar
+                            </a>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Sección de Gestión de Productos -->
+                <section id="productos-section" class="gestion-clientes" style="display: none;">
+                    <div class="gestion-header" style="background: linear-gradient(135deg, #2196F3, #1976D2);">
+                        <h2>Gestión de Productos</h2>
+                    </div>
+                    <div class="crud-menu">
+                        <div class="crud-buttons">
+                            <a href="/venta/c_producto" class="crud-btn crear">
+                                <span>➕</span>
+                                Crear
+                            </a>
+                            <a href="/venta/q_producto" class="crud-btn consultar">
+                                <span>👁️</span>
+                                Consultar
+                            </a>
+                            <a href="/venta/u_producto" class="crud-btn modificar">
+                                <span>✏️</span>
+                                Modificar
+                            </a>
+                            <a href="/venta/d_producto" class="crud-btn eliminar">
+                                <span>🗑️</span>
+                                Eliminar
+                            </a>
+                        </div>
+                    </div>
+                </section>
+                <!-- Sección de Gestión de Compras -->
+                <section id="compras-section" class="gestion-clientes" style="display: none;">
+                    <div class="gestion-header" style="background: linear-gradient(135deg, #3f51b5, #303f9f);">
+                        <h2>Gestión de Compras</h2>
+                    </div>
+                    <div class="crud-menu">
+                        <div class="crud-buttons">
+                            <a href="/venta/c_compra" class="crud-btn crear">
+                                <span>➕</span>
+                                Crear
+                            </a>
+                            <a href="/venta/q_compra" class="crud-btn consultar">
+                                <span>👁️</span>
+                                Consultar
+                            </a>
+                            <a href="/venta/u_compra" class="crud-btn modificar">
+                                <span>✏️</span>
+                                Modificar
+                            </a>
+                            <a href="/venta/d_compra" class="crud-btn eliminar">
+                                <span>🗑️</span>
+                                Eliminar
+                            </a>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        function showSection(section) {
+            // Ocultar todas las secciones
+            document.getElementById('inicio-section').style.display = 'none';
+            document.getElementById('clientes-section').style.display = 'none';
+            document.getElementById('productos-section').style.display = 'none';
+            document.getElementById('proveedores-section').style.display = 'none';
+            document.getElementById('compras-section').style.display = 'none';
+
+            // Remover clase active de todos los menu items
+            const menuItems = document.querySelectorAll('.menu-item');
+            menuItems.forEach(item => item.classList.remove('active'));
+            
+            // Mostrar la sección seleccionada y actualizar título
+            if (section === 'inicio') {
+                document.getElementById('inicio-section').style.display = 'block';
+                document.getElementById('main-title').textContent = 'Sistema de Gestión de Ventas';
+                event.target.classList.add('active');
+            } else if (section === 'clientes') {
+                document.getElementById('clientes-section').style.display = 'block';
+                document.getElementById('main-title').textContent = 'Gestión de Clientes (Cuando se selecciona Clientes)';
+                event.target.classList.add('active');
+            } else if (section === 'productos') {
+                document.getElementById('productos-section').style.display = 'block';
+                document.getElementById('main-title').textContent = 'Gestión de Productos (Cuando se selecciona Productos)';
+                event.target.classList.add('active');
+            } else if (section === 'proveedores') {
+                document.getElementById('proveedores-section').style.display = 'block';
+                document.getElementById('main-title').textContent = 'Gestión de Proveedores (Cuando se selecciona Proveedores)';
+                event.target.classList.add('active');
+            }else if (section === 'compras') {
+                document.getElementById('compras-section').style.display = 'block';
+                document.getElementById('main-title').textContent = 'Gestión de Compras (Cuando se selecciona Compras)';
+                event.target.classList.add('active');
+            }
+
+            // Activar botón correcto
+            const clickedBtn = Array.from(menuItems).find(btn => btn.textContent.trim().includes(section.charAt(0).toUpperCase() + section.slice(1)));
+            if (clickedBtn) clickedBtn.classList.add('active');
+
+            // Cerrar sidebar en móvil
+            if (window.innerWidth <= 768) {
+                closeSidebar();
+            }
+        }
+        
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.overlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+        
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.overlay');
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        }
+
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                closeSidebar();
+            }
+        });
+    </script>
+</body>
+</html>

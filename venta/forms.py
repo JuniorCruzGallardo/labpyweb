@@ -1,8 +1,8 @@
 from django import forms
 #from django.core.validators import RegexValidator
 # De nuestro negocio
-from .models import Cliente
-from .models import Producto
+from .models import Cliente, Producto, Proveedor, Compra, DetalleCompra
+
 # Para gestionar un error
 from django.core.exceptions import ValidationError
 
@@ -142,5 +142,136 @@ class ProductoUpdateForm(forms.ModelForm):
             },
             'stock': {
                 'invalid': "Ingrese una cantidad válida para el stock.",
+            },
+        }
+
+
+# Clase para crear un proveedor
+class ProveedorCreateForm(forms.ModelForm):
+    class Meta:
+        model = Proveedor
+        fields = ['id_proveedor', 'razon_social', 'ruc', 'direccion', 'telefono', 'email', 'fec_reg']
+        labels = {
+            'id_proveedor': 'ID del Proveedor',
+            'razon_social': 'Razón Social',
+            'ruc'         : 'RUC',
+            'direccion'   : 'Dirección',
+            'telefono'    : 'Teléfono',
+            'email'       : 'Correo Electrónico',
+            'fec_reg'     : 'Fecha de Registro',
+        }
+        widgets = {
+            'direccion' : forms.Textarea(attrs={'rows': 2, 'placeholder': 'Dirección del proveedor'}),
+            'telefono'  : forms.TextInput(attrs={'placeholder': 'Ej. 987654321'}),
+            'email'     : forms.EmailInput(attrs={'placeholder': 'Ej. proveedor@empresa.com'}),
+            'fec_reg'   : forms.DateInput(attrs={'type': 'date'}),
+        }
+        error_messages = {
+            'id_proveedor': {
+                'max_length': "El ID no debe exceder los 8 caracteres.",
+            },
+            'ruc': {
+                'max_length': "El RUC debe tener 11 dígitos.",
+                'unique': "Este RUC ya está registrado.",
+            },
+        }
+
+    def clean_id_proveedor(self):
+        id_proveedor = self.cleaned_data.get('id_proveedor')
+        if id_proveedor and Proveedor.objects.filter(id_proveedor=id_proveedor).exists():
+            raise ValidationError("ID_DUPLICADO")
+        return id_proveedor
+
+# Clase para modificar un proveedor
+class ProveedorUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Proveedor
+        fields = ['razon_social', 'ruc', 'direccion', 'telefono', 'email', 'fec_reg']
+        labels = {
+            'razon_social': 'Razón Social',
+            'ruc'         : 'RUC',
+            'direccion'   : 'Dirección',
+            'telefono'    : 'Teléfono',
+            'email'       : 'Correo Electrónico',
+            'fec_reg'     : 'Fecha de Registro',
+        }
+        widgets = {
+            'razon_social': forms.TextInput(attrs={'placeholder': 'Ej. Inversiones ABC S.A.C.'}),
+            'ruc'         : forms.TextInput(attrs={'placeholder': '11 dígitos'}),
+            'direccion'   : forms.Textarea(attrs={'rows': 2}),
+            'telefono'    : forms.TextInput(attrs={'placeholder': 'Ej. 987654321'}),
+            'email'       : forms.EmailInput(attrs={'placeholder': 'proveedor@empresa.com'}),
+            'fec_reg'     : forms.DateInput(attrs={'type': 'date'}),
+        }
+
+#===========================
+# Formulario Principal de Compra
+
+from django.core.exceptions import ValidationError
+from django.forms import inlineformset_factory
+#===========================
+class CompraForm(forms.ModelForm):
+    class Meta:
+        model = Compra
+        fields = ['id_compra', 'proveedor', 'fecha_compra']
+        labels = {
+            'id_compra': 'ID de la Compra',
+            'proveedor': 'Proveedor',
+            'fecha_compra': 'Fecha de Compra',
+        }
+        widgets = {
+            'fecha_compra': forms.DateInput(attrs={'type': 'date'}),
+        }
+
+    def clean_id_compra(self):
+        id_compra = self.cleaned_data.get('id_compra')
+        if id_compra and Compra.objects.filter(id_compra=id_compra).exists():
+            raise ValidationError("ID_COMPRA_DUPLICADO")
+        return id_compra
+
+#===========================
+# Formulario de DetalleCompra (inline)
+#===========================
+class DetalleCompraForm(forms.ModelForm):
+    class Meta:
+        model = DetalleCompra
+        fields = ['producto', 'cantidad', 'precio_unitario']
+        labels = {
+            'producto': 'Producto',
+            'cantidad': 'Cantidad',
+            'precio_unitario': 'Precio Unitario (S/.)',
+        }
+
+#===========================
+# InlineFormset de Detalles de Compra
+#===========================
+DetalleCompraFormSet = inlineformset_factory(
+    Compra,
+    DetalleCompra,
+    form=DetalleCompraForm,
+    extra=1,
+    can_delete=True
+)
+
+#===========================
+# Formulario para actualizar la compra (cuando ya existe y tiene total)
+#===========================
+class CompraUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Compra
+        fields = ['proveedor', 'fecha_compra', 'total']
+        labels = {
+            'proveedor'    : 'Proveedor',
+            'fecha_compra' : 'Fecha de Compra',
+            'total'        : 'Total de la Compra (S/.)',
+        }
+        widgets = {
+            'fecha_compra': forms.DateInput(attrs={'type': 'date'}),
+            'total'       : forms.NumberInput(attrs={'step': '0.01', 'min': '0'}),
+        }
+        error_messages = {
+            'total': {
+                'required': "Debe ingresar el total de la compra.",
+                'invalid': "Ingrese un número válido para el total.",
             },
         }

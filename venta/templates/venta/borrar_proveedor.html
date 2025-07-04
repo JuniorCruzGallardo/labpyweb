@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eliminar Proveedor</title>
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 20px;
+        background-color: #f0f2f5;
+        color: #333;
+    }
+
+    .container {
+        max-width: 950px;
+        margin: auto;
+        background: #ffffff;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    .header-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+    .header-section h1 {
+        font-size: 26px;
+        color: #2c3e50;
+        margin: 0;
+    }
+
+    .btn-exit {
+        background: #6c757d;
+        color: #fff;
+        padding: 10px 18px;
+        border: none;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: bold;
+        transition: background 0.3s ease;
+    }
+
+    .btn-exit:hover {
+        background: #495057;
+    }
+
+    .radio-group label {
+        margin-right: 20px;
+        font-weight: 500;
+    }
+
+    .search-input-group {
+        margin-top: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    input[type="text"] {
+        flex-grow: 1;
+        padding: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+
+    .btn-search {
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 10px 20px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.3s ease;
+    }
+
+    .btn-search:hover {
+        background: #0056b3;
+    }
+
+    .results-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 25px;
+        font-size: 15px;
+    }
+
+    .results-table th, .results-table td {
+        border: 1px solid #e1e4e8;
+        padding: 12px;
+        text-align: left;
+    }
+
+    .results-table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 13px;
+        color: #495057;
+    }
+
+    .results-table tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    .results-table tr:hover {
+        background-color: #f1f3f5;
+    }
+
+    .btn-delete {
+        background-color: #dc3545;
+        color: white;
+        padding: 8px 14px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.3s ease;
+    }
+
+    .btn-delete:hover {
+        background-color: #b52a37;
+    }
+
+    .record-count {
+        margin-top: 15px;
+        font-weight: 600;
+        color: #212529;
+    }
+
+    .messages .success {
+        color: #28a745;
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
+
+    .messages .error {
+        color: #dc3545;
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
+
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(3px);
+        z-index: 999;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal-box {
+        background: white;
+        padding: 25px 30px;
+        border-radius: 10px;
+        text-align: center;
+        width: 90%;
+        max-width: 400px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-message {
+        font-size: 16px;
+        margin-bottom: 20px;
+    }
+
+    .modal-buttons button {
+        margin: 0 10px;
+        padding: 10px 16px;
+        border-radius: 6px;
+        font-weight: bold;
+    }
+
+    .btn-yes {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-no {
+        background-color: #6c757d;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-yes:hover {
+        background-color: #218838;
+    }
+
+    .btn-no:hover {
+        background-color: #495057;
+    }
+
+    @media (max-width: 600px) {
+        .header-section {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .search-input-group {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .results-table {
+            font-size: 13px;
+        }
+
+        .modal-box {
+            width: 95%;
+        }
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="header-section">
+        <h1>Eliminar Proveedor</h1>
+        <a href="/home/" class="btn-exit">Salir</a>
+    </div>
+
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="{% if message.tags == 'error' %}error{% elif message.tags == 'success' %}success{% else %}{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="search-section">
+        <form method="post" id="searchForm">
+            {% csrf_token %}
+            <div class="radio-group">
+                <label>
+                    <input type="radio" name="tipo_busqueda" value="id"
+                        {% if tipo_busqueda == 'id' %}checked{% endif %}
+                        onchange="cambiarTipoBusqueda()"> Por ID
+                </label>
+                <label>
+                    <input type="radio" name="tipo_busqueda" value="nombre"
+                        {% if tipo_busqueda == 'nombre' %}checked{% endif %}
+                        onchange="cambiarTipoBusqueda()"> Por Razón Social
+                </label>
+            </div>
+            <div class="search-input-group">
+                <label for="termino_busqueda"><strong>Buscar:</strong></label>
+                <input type="text" id="termino_busqueda" name="termino_busqueda"
+                    value="{{ termino_busqueda }}"
+                    placeholder="Ingrese término de búsqueda"
+                    maxlength="80" required>
+                <button type="submit" name="consultar" class="btn-search">Consultar</button>
+            </div>
+        </form>
+    </div>
+
+    {% if proveedores_encontrados %}
+    <div class="results-section">
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Razón Social</th>
+                    <th>RUC</th>
+                    <th>Dirección</th>
+                    <th>Teléfono</th>
+                    <th>Email</th>
+                    <th>Fec. Registro</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for proveedor in proveedores_encontrados %}
+                <tr>
+                    <td>{{ proveedor.id_proveedor }}</td>
+                    <td>{{ proveedor.razon_social }}</td>
+                    <td>{{ proveedor.ruc }}</td>
+                    <td>{{ proveedor.direccion }}</td>
+                    <td>{{ proveedor.telefono }}</td>
+                    <td>{{ proveedor.email }}</td>
+                    <td>{{ proveedor.fec_reg|date:"d/m/Y" }}</td>
+                    <td>
+                        <button type="button" class="btn-delete"
+                            onclick="confirmarEliminacion('{{ proveedor.id_proveedor }}')">Eliminar</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="record-count">
+            Total de registros mostrados: {{ total_registros }}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal de confirmación -->
+<div id="modalOverlay" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-message" id="modalMessage">
+            ¿Desea eliminar el proveedor con ID XXXXX?
+        </div>
+        <div class="modal-buttons">
+            <button class="btn-yes" onclick="eliminarProveedor()">SÍ</button>
+            <button class="btn-no" onclick="cerrarModal()">NO</button>
+        </div>
+    </div>
+</div>
+
+<form id="deleteForm" method="post" style="display: none;">
+    {% csrf_token %}
+    <input type="hidden" name="eliminar" value="1">
+    <input type="hidden" name="id_eliminar" id="idEliminar">
+    <input type="hidden" name="tipo_busqueda_actual" value="{{ tipo_busqueda }}">
+    <input type="hidden" name="termino_busqueda_actual" value="{{ termino_busqueda }}">
+</form>
+
+<script>
+    let idAEliminar = '';
+    function cambiarTipoBusqueda() {
+        document.getElementById('termino_busqueda').value = '';
+        const tipo = document.querySelector('input[name="tipo_busqueda"]:checked').value;
+        const input = document.getElementById('termino_busqueda');
+        if (tipo === 'id') {
+            input.placeholder = 'Ingrese ID del proveedor';
+            input.maxLength = 10;
+        } else {
+            input.placeholder = 'Ingrese razón social del proveedor';
+            input.maxLength = 100;
+        }
+    }
+
+    function confirmarEliminacion(id) {
+        idAEliminar = id;
+        document.getElementById('modalMessage').textContent = `¿Desea eliminar el proveedor con ID ${id}?`;
+        document.getElementById('modalOverlay').style.display = 'flex';
+    }
+
+    function eliminarProveedor() {
+        document.getElementById('idEliminar').value = idAEliminar;
+        document.getElementById('deleteForm').submit();
+    }
+
+    function cerrarModal() {
+        document.getElementById('modalOverlay').style.display = 'none';
+        idAEliminar = '';
+    }
+
+    document.getElementById('modalOverlay').addEventListener('click', function(e) {
+        if (e.target === this) {
+            cerrarModal();
+        }
+    });
+
+    window.onload = function() {
+        cambiarTipoBusqueda();
+        document.getElementById('termino_busqueda').focus();
+    };
+</script>
+</body>
+</html>

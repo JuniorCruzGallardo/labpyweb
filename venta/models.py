@@ -57,3 +57,68 @@ class Producto(models.Model):
 
     def __str__(self):
         return f'{self.nom_prod} - S/. {self.precio} (Stock: {self.stock}) | Vence: {self.fec_vencim} | Activo: {"Sí" if self.activo else "No"}'
+    
+
+  
+  
+
+
+from django.core.validators import MinLengthValidator
+
+'''
+  Modelo: Proveedor
+  Tabla: venta_proveedor
+  Atributos:
+    - id_proveedor: texto numérico de 8 caracteres, clave primaria
+    - razon_social: texto, máximo 100 caracteres
+    - ruc: texto de 11 caracteres, único
+    - direccion: texto libre, opcional
+    - telefono: texto hasta 15 caracteres, opcional
+    - email: correo electrónico, opcional
+    - fec_reg: fecha manual de registro (formato aaaa-mm-dd)
+    - fec_sis: fecha y hora del sistema (timestamp)
+'''
+
+class Proveedor(models.Model):
+    id_proveedor = models.CharField(
+        primary_key=True,
+        max_length=8,
+        validators=[MinLengthValidator(1)],
+        error_messages={'max_length': 'Máximo 8 caracteres'}
+    )
+    razon_social = models.CharField(max_length=100)
+    ruc = models.CharField(max_length=11, unique=True)
+    direccion = models.TextField(blank=True, null=True)
+    telefono = models.CharField(max_length=15, blank=True, null=True)
+    email = models.EmailField(max_length=100, blank=True, null=True)
+    fec_reg = models.DateField()  # fecha registrada manualmente
+    fec_sis = models.DateTimeField(auto_now=True)  # fecha-hora del sistema
+
+
+    def __str__(self):
+        return f'ID: {self.id_proveedor} | {self.razon_social} | RUC: {self.ruc}'
+
+
+class Compra(models.Model):
+    id_compra = models.CharField(max_length=10, primary_key=True)
+    proveedor = models.ForeignKey('Proveedor', on_delete=models.CASCADE)
+    fecha_compra = models.DateField()
+    total = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return f"{self.id_compra} - {self.proveedor.nom_proveedor}"
+
+
+class DetalleCompra(models.Model):
+    compra = models.ForeignKey('Compra', on_delete=models.CASCADE, related_name='detalles')
+    producto = models.ForeignKey('Producto', on_delete=models.CASCADE)
+    cantidad = models.PositiveIntegerField()
+    precio_unitario = models.DecimalField(max_digits=10, decimal_places=2)
+
+    @property
+    def subtotal(self):
+        return self.cantidad * self.precio_unitario
+
+    def __str__(self):
+        return f"{self.producto.nom_prod} x {self.cantidad} (Compra {self.compra.id_compra})"
+

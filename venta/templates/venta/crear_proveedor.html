@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Proveedor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .header-section h1 {
+            margin: 0;
+            color: #333;
+        }
+        .btn-exit {
+            background-color: #9E9E9E;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-exit:hover {
+            background-color: #757575;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .error {
+            color: red;
+            font-size: 0.9em;
+        }
+        .success-message {
+            color: green;
+            margin: 10px 0;
+            padding: 8px;
+            background-color: #e8f5e8;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-section">
+            <h1>Registro de Proveedor</h1>
+            <a href="/home/" class="btn-exit">Salir</a>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="success-message">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-group">
+                {{ form.id_proveedor.label_tag }}
+                {{ form.id_proveedor }}
+                {% if form.id_proveedor.errors %}
+                    <div class="error">{{ form.id_proveedor.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.razon_social.label_tag }}
+                {{ form.razon_social }}
+                {% if form.razon_social.errors %}
+                    <div class="error">{{ form.razon_social.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.ruc.label_tag }}
+                {{ form.ruc }}
+                {% if form.ruc.errors %}
+                    <div class="error">{{ form.ruc.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.direccion.label_tag }}
+                {{ form.direccion }}
+                {% if form.direccion.errors %}
+                    <div class="error">{{ form.direccion.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.telefono.label_tag }}
+                {{ form.telefono }}
+                {% if form.telefono.errors %}
+                    <div class="error">{{ form.telefono.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.email.label_tag }}
+                {{ form.email }}
+                {% if form.email.errors %}
+                    <div class="error">{{ form.email.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.fec_reg.label_tag }}
+                {{ form.fec_reg }}
+                {% if form.fec_reg.errors %}
+                    <div class="error">{{ form.fec_reg.errors }}</div>
+                {% endif %}
+            </div>
+
+            <button type="submit">Guardar Proveedor</button>
+        </form>
+    </div>
+</body>
+</html>
