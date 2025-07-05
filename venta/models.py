@@ -91,8 +91,8 @@ class Proveedor(models.Model):
     direccion = models.TextField(blank=True, null=True)
     telefono = models.CharField(max_length=15, blank=True, null=True)
     email = models.EmailField(max_length=100, blank=True, null=True)
-    fec_reg = models.DateField()  # fecha registrada manualmente
-    fec_sis = models.DateTimeField(auto_now=True)  # fecha-hora del sistema
+    fec_reg = models.DateField()  
+    fec_sis = models.DateTimeField(auto_now=True) 
 
 
     def __str__(self):
@@ -101,18 +101,58 @@ class Proveedor(models.Model):
 
 
 
+
+from django.core.exceptions import ValidationError
+from django.db import models
+
 class Venta(models.Model):
-    cod_venta = models.AutoField(primary_key=True)  # clave primaria autoincremental
-    cod_cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
-    cod_producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
-    cantidad = models.PositiveIntegerField(validators=[MinValueValidator(1)])
-    precio_unitario = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0.01)])
+    cod_venta = models.AutoField(primary_key=True)
+    cod_cliente = models.ForeignKey('Cliente', on_delete=models.CASCADE)
+    cod_producto = models.ForeignKey('Producto', on_delete=models.CASCADE)
+    cantidad = models.PositiveIntegerField()
+    precio_unitario = models.DecimalField(max_digits=10, decimal_places=2)
     subtotal = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
 
     def save(self, *args, **kwargs):
-        # Calcula subtotal automáticamente antes de guardar
+        from venta.models import Producto
+
         self.subtotal = self.cantidad * self.precio_unitario
+
+        try:
+            venta_anterior = Venta.objects.get(pk=self.pk)
+        except Venta.DoesNotExist:
+            venta_anterior = None
+
+        if venta_anterior:
+
+            if venta_anterior.cod_producto_id == self.cod_producto_id:
+                diferencia = self.cantidad - venta_anterior.cantidad
+                if self.cod_producto.stock < diferencia:
+                    raise ValidationError(f"Stock insuficiente para actualizar. Disponible: {self.cod_producto.stock}")
+                self.cod_producto.stock -= diferencia
+            else:
+          
+                producto_anterior = venta_anterior.cod_producto
+                producto_anterior.stock += venta_anterior.cantidad
+                producto_anterior.save()
+
+                if self.cod_producto.stock < self.cantidad:
+                    raise ValidationError(f"Stock insuficiente para el nuevo producto. Disponible: {self.cod_producto.stock}")
+                self.cod_producto.stock -= self.cantidad
+        else:
+            if self.cod_producto.stock < self.cantidad:
+                raise ValidationError(f"Stock insuficiente. Disponible: {self.cod_producto.stock}")
+            self.cod_producto.stock -= self.cantidad
+
+        self.cod_producto.save()
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Venta {self.cod_venta} | Cliente: {self.cod_cliente.id_cliente} | Producto: {self.cod_producto.nom_prod}"
+
+
+
+    def delete(self, *args, **kwargs):
+        self.cod_producto.stock += self.cantidad
+        self.cod_producto.save()
+        super().delete(*args, **kwargs)

@@ -49,7 +49,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'venta.mdl_seguridad.SimpleMiddleware',
-    'venta.middleware.AuthenticationMiddleware',
+    #'venta.middleware.AuthenticationMiddleware',
     
 ]
 

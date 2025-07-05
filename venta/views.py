@@ -15,17 +15,7 @@ from django.contrib import messages
 from .models import Venta
 from .forms import VentaCreateForm, VentaUpdateForm
 
-#=============================================
-def handle_undefined_url(request):
-    """
-    Gestiona los urls no definidos
-    """
-    if not request.user.is_authenticated:
-        messages.warning(request,'Debe iniciar sesión para acceder al sistema')
-        return redirect('login')
-    else:
-        messages.info(request,'La página solicitada no existe. Se redirigirá al inicio')
-    return redirect('home')    
+
 
 def user_login(request):
     #Si ya esta autentica enviar a home
@@ -585,19 +575,25 @@ def borrar_proveedor(request):
 
 
 # Crear una nueva venta
+from django.core.exceptions import ValidationError
+
 @login_required
 @permission_required('venta.add_venta', raise_exception=True)
 def venta_create(request):
     if request.method == 'POST':
         form = VentaCreateForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Venta registrada correctamente')
-            return redirect('lista_ventas')  # Opcionalmente puedes cambiarlo
+            try:
+                form.save()
+                messages.success(request, 'Venta registrada correctamente')
+                return redirect('lista_ventas')
+            except ValidationError as e:
+                form.add_error(None, e.message)  
     else:
         form = VentaCreateForm()
 
-    return render(request, 'venta/crear_venta.html', {'form': form})  
+    return render(request, 'venta/crear_venta.html', {'form': form})
+
 
 
 # Actualizar una venta existente
@@ -625,7 +621,7 @@ def venta_list(request):
     return render(request, 'venta/lista_ventas.html', {'ventas': ventas})  
 
 
-# Eliminar venta (si tienes plantilla)
+# Eliminar venta 
 @login_required
 @permission_required('venta.delete_venta', raise_exception=True)
 def venta_delete(request, cod_venta):

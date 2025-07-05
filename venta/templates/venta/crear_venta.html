@@ -82,6 +82,13 @@
             background-color: #e8f5e8;
             border-radius: 4px;
         }
+        .general-error {
+            color: red;
+            margin-bottom: 15px;
+            background-color: #ffecec;
+            padding: 10px;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -95,6 +102,14 @@
             {% for message in messages %}
                 <div class="success-message">{{ message }}</div>
             {% endfor %}
+        {% endif %}
+
+        {% if form.non_field_errors %}
+            <div class="general-error">
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
         {% endif %}
 
         <form method="post">

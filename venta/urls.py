@@ -30,7 +30,6 @@ urlpatterns = [
 
 
 
-    #Poner al final de la lista
-    re_path(r'^.*/$', views.handle_undefined_url, name = 'catch_all'),
+
 
 ]
